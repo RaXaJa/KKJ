@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Иә немесе жоқ? — Мақта қыз бен мысық</title>
+<style>
+:root{--ink:#263b55;--gold:#f2b544;--cream:#fff8e9;--blue:#eaf4ff;--green:#27834b;--red:#b94b37}
+*{box-sizing:border-box} body{margin:0;font-family:"Trebuchet MS",Arial,sans-serif;background:linear-gradient(135deg,#fff3d5,#e8f5ff);color:var(--ink);min-height:100vh;display:grid;place-items:center;padding:20px}
+main{width:min(100%,980px);background:#fff;border:5px solid #f4c66b;border-radius:30px;padding:clamp(18px,4vw,38px);box-shadow:0 12px 35px #7d8b9b33;text-align:center}
+h1{font-size:clamp(2rem,5vw,3.5rem);margin:0;color:#9b4d20} .sub{font-size:clamp(1rem,2vw,1.3rem);margin:8px 0 24px}
+.top{display:flex;justify-content:space-between;gap:12px;font-weight:bold;font-size:1.1rem}.track{display:flex;gap:8px;margin:12px 0 24px}.track span{height:10px;border-radius:20px;background:#e5e8ed;flex:1}.track span.active{background:var(--gold)}
+.card{min-height:210px;border-radius:24px;background:var(--blue);display:grid;place-items:center;padding:25px;margin:15px 0 22px;border:2px solid #c9e0f7}
+#question{font-size:clamp(1.5rem,3.4vw,2.5rem);font-weight:800;line-height:1.35}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+button{border:0;border-radius:18px;padding:20px 14px;font-size:clamp(1.2rem,2.5vw,1.8rem);font-weight:900;cursor:pointer;box-shadow:0 5px 0 #0002;transition:.15s}
+button:active{transform:translateY(3px);box-shadow:0 2px 0 #0002}button:disabled{opacity:.65;cursor:default}
+.yes{background:#d9f3df;color:#176a35}.no{background:#ffe0d9;color:#a43b2c}
+#feedback{margin:20px auto 0;padding:16px;border-radius:16px;font-size:1.15rem;line-height:1.4;display:none}
+#next,#restart{background:#f3bd4f;color:#573b0b;margin-top:18px;padding:15px 28px;font-size:1.15rem}
+#result{display:none;background:var(--cream);border-radius:22px;padding:28px;margin-top:18px}
+#score{font-size:3.5rem;color:var(--green);font-weight:900}
+.small{font-size:.95rem;color:#63738a;margin-top:20px}
+@media(max-width:560px){.choices{gap:10px}button{padding:16px 8px}.card{min-height:180px}}
+</style>
+</head>
+<body>
+<main>
+<h1>🐱 ИӘ НЕМЕСЕ ЖОҚ?</h1>
+<div class="sub">«Мақта қыз бен мысық» ертегісі</div>
+<section id="game">
+<div class="top"><span id="count">1 / 4 сұрақ</span><span id="points">Ұпай: 0</span></div>
+<div class="track" id="track"><span class="active"></span><span></span><span></span><span></span></div>
+<div class="card"><div id="question"></div></div>
+<div class="choices">
+<button class="yes" id="yes">✓ ИӘ</button>
+<button class="no" id="no">✕ ЖОҚ</button>
+</div>
+<div id="feedback" aria-live="polite"></div>
+<button id="next" hidden>КЕЛЕСІ СҰРАҚ →</button>
+</section>
+<section id="result">
+<div style="font-size:2.5rem">🏆</div><h2>ОЙЫН АЯҚТАЛДЫ!</h2>
+<div id="score">0 / 4</div><p id="resultText"></p>
+<button id="restart">↻ ҚАЙТА ОЙНАУ</button>
+</section>
+<div class="small">Бастау үшін «ИӘ» немесе «ЖОҚ» батырмасын таңда.</div>
+</main>
+<script>
+const data=[
+{q:"Ертегінің басты кейіпкерлері – Мақта қыз бен мысық.",a:"Иә",why:"Дұрыс! Ертегінің басты кейіпкерлері – Мақта қыз бен мысық."},
+{q:"Мысық тышқаннан көмек сұрады.",a:"Иә",why:"Жарайсың! Мысық тышқаннан көмек сұрады."},
+{q:"Ертегіде сиыр кездеспейді.",a:"Жоқ",why:"Дұрыс! Ертегіде сиыр кездеседі."},
+{q:"Ертегі өзара көмектесуге үйретеді.",a:"Иә",why:"Өте жақсы! Ертегі бір-біріне көмектесуді үйретеді."}
+];
+let i=0,score=0,answered=false;
+const $=id=>document.getElementById(id);
+function render(){
+ $('count').textContent=`${i+1} / 4 сұрақ`; $('points').textContent=`Ұпай: ${score}`;
+ $('question').textContent=data[i].q;
+ [...$('track').children].forEach((el,n)=>el.classList.toggle('active',n<=i));
+ $('feedback').style.display='none';$('next').hidden=true;
+ $('yes').disabled=false;$('no').disabled=false;answered=false;
+}
+function answer(v){
+ if(answered)return;answered=true;
+ const ok=v===data[i].a;if(ok)score++;
+ $('points').textContent=`Ұпай: ${score}`;
+ $('yes').disabled=true;$('no').disabled=true;
+ const f=$('feedback');f.style.display='block';
+ f.style.background=ok?'#e2f6e7':'#fff0e8';
+ f.style.color=ok?'#176a35':'#9b422e';
+ f.innerHTML=`<strong>${ok?'🎉 ЖАРАЙСЫҢ! ДҰРЫС!':'😊 ҚАЙТА ОЙЛАНЫП КӨР!'}</strong><br>${data[i].why}<br><strong>Дұрыс жауап: ${data[i].a}</strong>`;
+ $('next').hidden=false;$('next').textContent=i===3?'НӘТИЖЕНІ КӨРУ':'КЕЛЕСІ СҰРАҚ →';
+}
+$('yes').onclick=()=>answer('Иә');$('no').onclick=()=>answer('Жоқ');
+$('next').onclick=()=>{
+ if(i<3){i++;render()}else{
+  $('game').style.display='none';$('result').style.display='block';
+  $('score').textContent=`${score} / 4`;
+  $('resultText').textContent=score===4?'Керемет! Сен ертегіні жақсы білесің!':score>=2?'Жарайсың! Тағы да қайталап көр!':'Жақсы талпыныс! Ертегіні тағы бір оқып шық!';
+ }
+};
+$('restart').onclick=()=>{i=0;score=0;$('result').style.display='none';$('game').style.display='block';render()};
+render();
+</script>
+</body></html>
